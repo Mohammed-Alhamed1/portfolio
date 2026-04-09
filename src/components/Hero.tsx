@@ -235,8 +235,8 @@ export default function Hero() {
                 <img
                   src="/photo.jpg"
                   alt="Mohammed Abdullah Al-Hamed"
-                  className="w-full h-full object-cover object-top grayscale-[15%] contrast-[1.02]"
-                  style={{ filter: "grayscale(10%) brightness(0.95) contrast(1.05)" }}
+                  className="w-full h-full object-cover object-top"
+                  style={{ filter: "none" }}
                   onError={(e) => {
                     const target = e.currentTarget;
                     target.style.display = "none";
@@ -256,8 +256,6 @@ export default function Hero() {
                     }
                   }}
                 />
-                {/* Gold overlay tint */}
-                <div className="absolute inset-0 bg-gradient-to-t from-gold/10 via-transparent to-transparent pointer-events-none" />
               </div>
 
               {/* Floating info badge */}

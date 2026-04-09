@@ -36,7 +36,7 @@ export default function About() {
                   src="/photo.jpg"
                   alt="Mohammed Abdullah Al-Hamed"
                   className="w-full h-full object-cover object-top"
-                  style={{ filter: "grayscale(8%) contrast(1.05)" }}
+                  style={{ filter: "none" }}
                   onError={(e) => {
                     const t = e.currentTarget;
                     t.style.display = "none";
