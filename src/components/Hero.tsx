@@ -1,71 +1,23 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { useLanguage } from "@/context/LanguageContext";
 import { ArrowDown, MapPin, Circle } from "lucide-react";
 import { GitHubIcon, LinkedInIcon } from "@/components/Icons";
 
+const HeroBackground3D = dynamic(() => import("@/components/HeroBackground3D"), {
+  ssr: false,
+  loading: () => null,
+});
+
 export default function Hero() {
   const { t, isRTL } = useLanguage();
   const [mounted, setMounted] = useState(false);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    // Staggered entrance
     const timer = setTimeout(() => setMounted(true), 50);
     return () => clearTimeout(timer);
-  }, []);
-
-  // Subtle particle field
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    resize();
-    window.addEventListener("resize", resize);
-
-    const particles: { x: number; y: number; vx: number; vy: number; opacity: number; size: number }[] = [];
-    for (let i = 0; i < 60; i++) {
-      particles.push({
-        x: Math.random() * window.innerWidth,
-        y: Math.random() * window.innerHeight,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
-        opacity: Math.random() * 0.4 + 0.05,
-        size: Math.random() * 1.5 + 0.3,
-      });
-    }
-
-    let animId: number;
-    const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particles.forEach((p) => {
-        p.x += p.vx;
-        p.y += p.vy;
-        if (p.x < 0) p.x = canvas.width;
-        if (p.x > canvas.width) p.x = 0;
-        if (p.y < 0) p.y = canvas.height;
-        if (p.y > canvas.height) p.y = 0;
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(200, 169, 110, ${p.opacity})`;
-        ctx.fill();
-      });
-      animId = requestAnimationFrame(draw);
-    };
-    draw();
-
-    return () => {
-      window.removeEventListener("resize", resize);
-      cancelAnimationFrame(animId);
-    };
   }, []);
 
   const scrollToAbout = () => {
@@ -80,8 +32,8 @@ export default function Hero() {
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden" dir={isRTL ? "rtl" : "ltr"}>
-      {/* Particle canvas */}
-      <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-0" />
+      {/* 3D background */}
+      <HeroBackground3D />
 
       {/* Background gradient orbs */}
       <div className="orb w-[600px] h-[600px] top-[-100px] left-[10%] opacity-[0.04]"
