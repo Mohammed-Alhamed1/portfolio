@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# preview screenshots
+/public/preview-full.png
+/public/WhatsApp\ Image*
