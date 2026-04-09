@@ -1,7 +1,9 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { useLanguage } from "@/context/LanguageContext";
 import { Briefcase, ChevronRight } from "lucide-react";
+import { fadeInUp, staggerContainer, viewport } from "@/lib/motionVariants";
 
 export default function Experience() {
   const { t, isRTL } = useLanguage();
@@ -13,12 +15,18 @@ export default function Experience() {
       <div className="max-w-5xl mx-auto px-6 md:px-10">
 
         {/* Section header */}
-        <div className={`flex items-center gap-4 mb-6 ${isRTL ? "flex-row-reverse" : ""}`}>
+        <motion.div
+          className={`flex items-center gap-4 mb-6 ${isRTL ? "flex-row-reverse" : ""}`}
+          initial="hidden" whileInView="visible" viewport={viewport} variants={fadeInUp}
+        >
           <div className="gold-line-start" style={{ width: "48px" }} />
           <span className="section-label">{ex.label}</span>
-        </div>
+        </motion.div>
 
-        <div className={`mb-16 ${isRTL ? "text-right" : "text-left"}`}>
+        <motion.div
+          className={`mb-16 ${isRTL ? "text-right" : "text-left"}`}
+          initial="hidden" whileInView="visible" viewport={viewport} variants={fadeInUp}
+        >
           <h2
             style={{
               fontFamily: isRTL ? "var(--font-ibm-arabic)" : "var(--font-display)",
@@ -33,7 +41,7 @@ export default function Experience() {
             style={{ fontFamily: isRTL ? "var(--font-ibm-arabic)" : undefined }}>
             {ex.subheading}
           </p>
-        </div>
+        </motion.div>
 
         {/* Timeline */}
         <div className="relative">
@@ -46,11 +54,15 @@ export default function Experience() {
             }}
           />
 
-          <div className="flex flex-col gap-12">
+          <motion.div
+            className="flex flex-col gap-12"
+            initial="hidden" whileInView="visible" viewport={viewport} variants={staggerContainer}
+          >
             {ex.items.map((item, i) => (
-              <div
+              <motion.div
                 key={i}
                 className="relative"
+                variants={fadeInUp}
               >
                 {/* Timeline dot */}
                 <div
@@ -65,10 +77,12 @@ export default function Experience() {
                   <div className="w-2 h-2 rounded-full bg-gold" />
                 </div>
 
-                {/* Card */}
-                <div
+                {/* Card with hover */}
+                <motion.div
                   className="glass-card p-7 md:ml-12"
                   style={{ marginInlineStart: isRTL ? "0" : undefined, marginInlineEnd: isRTL ? "3rem" : undefined }}
+                  whileHover={{ y: -3, boxShadow: "0 12px 40px rgba(200,169,110,0.08)" }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
                 >
                   {/* Header */}
                   <div className={`flex flex-wrap items-start justify-between gap-4 mb-4 ${isRTL ? "flex-row-reverse" : ""}`}>
@@ -101,16 +115,13 @@ export default function Experience() {
                     </div>
                   </div>
 
-                  {/* Gold rule */}
                   <div className="gold-line-start mb-4" style={{ width: "32px" }} />
 
-                  {/* Description */}
                   <p className="text-sand-muted text-sm leading-relaxed mb-5"
                     style={{ fontFamily: isRTL ? "var(--font-ibm-arabic)" : undefined }}>
                     {item.description}
                   </p>
 
-                  {/* Achievements */}
                   <ul className="flex flex-col gap-2">
                     {item.achievements.map((ach, ai) => (
                       <li
@@ -124,10 +135,10 @@ export default function Experience() {
                       </li>
                     ))}
                   </ul>
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

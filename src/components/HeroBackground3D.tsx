@@ -1,148 +1,159 @@
 "use client";
 
-import { useRef, useMemo } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
-/* ─── Floating wireframe icosahedra ─────────────────────────────────── */
-function FloatingGeo({
-  position,
-  speed,
-  scale,
-}: {
-  position: [number, number, number];
-  speed: [number, number];
-  scale: number;
-}) {
-  const ref = useRef<THREE.Mesh>(null!);
-  useFrame((_, dt) => {
-    ref.current.rotation.x += dt * speed[0];
-    ref.current.rotation.y += dt * speed[1];
-  });
-  return (
-    <mesh ref={ref} position={position} scale={scale}>
-      <icosahedronGeometry args={[1, 1]} />
-      <meshBasicMaterial color="#C8A96E" wireframe transparent opacity={0.09} />
-    </mesh>
-  );
-}
+export default function HeroBackground3D() {
+  const mountRef = useRef<HTMLDivElement>(null);
 
-/* ─── Particle cloud ────────────────────────────────────────────────── */
-function Particles({ count = 180 }: { count?: number }) {
-  const ref = useRef<THREE.Points>(null!);
+  useEffect(() => {
+    const mount = mountRef.current;
+    if (!mount) return;
 
-  const positions = useMemo(() => {
-    const arr = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      arr[i * 3 + 0] = (Math.random() - 0.5) * 24;
-      arr[i * 3 + 1] = (Math.random() - 0.5) * 14;
-      arr[i * 3 + 2] = (Math.random() - 0.5) * 10;
+    const w = mount.clientWidth || window.innerWidth;
+    const h = mount.clientHeight || window.innerHeight;
+
+    // Scene
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(55, w / h, 0.1, 100);
+    camera.position.z = 10;
+
+    const renderer = new THREE.WebGLRenderer({
+      alpha: true,
+      antialias: false,
+      powerPreference: "low-power",
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.setSize(w, h);
+    renderer.setClearColor(0x000000, 0);
+    Object.assign(renderer.domElement.style, {
+      position: "absolute",
+      top: "0", left: "0",
+      width: "100%", height: "100%",
+      pointerEvents: "none",
+    });
+    mount.appendChild(renderer.domElement);
+
+    /* ── Particle cloud ─────────────────────────────────────── */
+    const pCount = 180;
+    const pPos = new Float32Array(pCount * 3);
+    for (let i = 0; i < pCount; i++) {
+      pPos[i * 3]     = (Math.random() - 0.5) * 24;
+      pPos[i * 3 + 1] = (Math.random() - 0.5) * 14;
+      pPos[i * 3 + 2] = (Math.random() - 0.5) * 10;
     }
-    return arr;
-  }, [count]);
+    const pGeo = new THREE.BufferGeometry();
+    pGeo.setAttribute("position", new THREE.BufferAttribute(pPos, 3));
+    const pMat = new THREE.PointsMaterial({
+      color: 0xC8A96E,
+      size: 0.045,
+      transparent: true,
+      opacity: 0.55,
+      sizeAttenuation: true,
+      depthWrite: false,
+    });
+    const points = new THREE.Points(pGeo, pMat);
+    scene.add(points);
 
-  useFrame((_, dt) => {
-    ref.current.rotation.y += dt * 0.007;
-    ref.current.rotation.x += dt * 0.003;
-  });
-
-  return (
-    <points ref={ref}>
-      <bufferGeometry>
-        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
-      </bufferGeometry>
-      <pointsMaterial
-        color="#C8A96E"
-        size={0.045}
-        sizeAttenuation
-        transparent
-        opacity={0.55}
-        depthWrite={false}
-      />
-    </points>
-  );
-}
-
-/* ─── Neural-network lines between nearby particles ─────────────────── */
-function LineNetwork({ count = 70 }: { count?: number }) {
-  const ref = useRef<THREE.LineSegments>(null!);
-
-  const linePositions = useMemo(() => {
-    const pts: [number, number, number][] = [];
-    for (let i = 0; i < count; i++) {
-      pts.push([
+    /* ── Neural-network lines ───────────────────────────────── */
+    const nCount = 70;
+    const nodes: THREE.Vector3[] = Array.from({ length: nCount }, () =>
+      new THREE.Vector3(
         (Math.random() - 0.5) * 20,
         (Math.random() - 0.5) * 12,
         (Math.random() - 0.5) * 8,
-      ]);
-    }
-
-    const threshold = 3.8;
-    const buf: number[] = [];
-    for (let i = 0; i < pts.length; i++) {
-      for (let j = i + 1; j < pts.length; j++) {
-        const dx = pts[i][0] - pts[j][0];
-        const dy = pts[i][1] - pts[j][1];
-        const dz = pts[i][2] - pts[j][2];
-        if (dx * dx + dy * dy + dz * dz < threshold * threshold) {
-          buf.push(...pts[i], ...pts[j]);
+      )
+    );
+    const lineBuf: number[] = [];
+    const thr = 3.8;
+    for (let i = 0; i < nCount; i++) {
+      for (let j = i + 1; j < nCount; j++) {
+        if (nodes[i].distanceTo(nodes[j]) < thr) {
+          lineBuf.push(nodes[i].x, nodes[i].y, nodes[i].z);
+          lineBuf.push(nodes[j].x, nodes[j].y, nodes[j].z);
         }
       }
     }
-    return new Float32Array(buf);
-  }, [count]);
+    const lGeo = new THREE.BufferGeometry();
+    lGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(lineBuf), 3));
+    const lMat = new THREE.LineBasicMaterial({ color: 0xC8A96E, transparent: true, opacity: 0.1 });
+    const networkLines = new THREE.LineSegments(lGeo, lMat);
+    scene.add(networkLines);
 
-  useFrame((_, dt) => {
-    ref.current.rotation.y += dt * 0.007;
-    ref.current.rotation.x += dt * 0.003;
-  });
+    /* ── Floating wireframe icosahedra ──────────────────────── */
+    type SDef = { pos: [number, number, number]; scale: number; speed: [number, number] };
+    const shapeDefs: SDef[] = [
+      { pos: [4.5, 1.5, -4],   scale: 2,   speed: [0.04, 0.06] },
+      { pos: [-5.5, -1.5, -6], scale: 2.8, speed: [0.06, 0.03] },
+      { pos: [0.5, 3.5, -12],  scale: 5,   speed: [0.02, 0.05] },
+    ];
+    const meshes = shapeDefs.map(({ pos, scale, speed }) => {
+      const geo = new THREE.IcosahedronGeometry(1, 1);
+      const mat = new THREE.MeshBasicMaterial({
+        color: 0xC8A96E,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.09,
+      });
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.set(...pos);
+      mesh.scale.setScalar(scale);
+      mesh.userData.speed = speed;
+      scene.add(mesh);
+      return mesh;
+    });
+
+    /* ── Resize ─────────────────────────────────────────────── */
+    const onResize = () => {
+      const nw = mount.clientWidth, nh = mount.clientHeight;
+      if (!nw || !nh) return;
+      camera.aspect = nw / nh;
+      camera.updateProjectionMatrix();
+      renderer.setSize(nw, nh);
+    };
+    window.addEventListener("resize", onResize);
+
+    /* ── Animation loop ─────────────────────────────────────── */
+    let rafId: number;
+    let lastT = 0;
+    const loop = (t: number) => {
+      rafId = requestAnimationFrame(loop);
+      const dt = Math.min((t - lastT) / 1000, 0.05);
+      lastT = t;
+
+      points.rotation.y      += 0.007 * dt;
+      points.rotation.x      += 0.003 * dt;
+      networkLines.rotation.y += 0.007 * dt;
+      networkLines.rotation.x += 0.003 * dt;
+
+      for (const m of meshes) {
+        const [sx, sy] = m.userData.speed as [number, number];
+        m.rotation.x += sx * dt;
+        m.rotation.y += sy * dt;
+      }
+      renderer.render(scene, camera);
+    };
+    rafId = requestAnimationFrame(loop);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener("resize", onResize);
+      renderer.dispose();
+      if (mount.contains(renderer.domElement)) {
+        mount.removeChild(renderer.domElement);
+      }
+    };
+  }, []);
 
   return (
-    <lineSegments ref={ref}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          args={[linePositions, 3]}
-        />
-      </bufferGeometry>
-      <lineBasicMaterial color="#C8A96E" transparent opacity={0.1} />
-    </lineSegments>
-  );
-}
-
-/* ─── Full scene ────────────────────────────────────────────────────── */
-function Scene() {
-  return (
-    <>
-      <Particles count={180} />
-      <LineNetwork count={70} />
-      <FloatingGeo position={[4.5, 1.5, -4]} speed={[0.04, 0.06]} scale={2} />
-      <FloatingGeo position={[-5.5, -1.5, -6]} speed={[0.06, 0.03]} scale={2.8} />
-      <FloatingGeo position={[0.5, 3.5, -12]} speed={[0.02, 0.05]} scale={5} />
-    </>
-  );
-}
-
-/* ─── Export ────────────────────────────────────────────────────────── */
-export default function HeroBackground3D() {
-  return (
-    <Canvas
+    <div
+      ref={mountRef}
       style={{
         position: "absolute",
         inset: 0,
         pointerEvents: "none",
         zIndex: 0,
       }}
-      camera={{ position: [0, 0, 10], fov: 55 }}
-      dpr={[1, 1.5]}
-      gl={{
-        alpha: true,
-        antialias: false,
-        powerPreference: "low-power",
-      }}
-      frameloop="always"
-    >
-      <Scene />
-    </Canvas>
+    />
   );
 }

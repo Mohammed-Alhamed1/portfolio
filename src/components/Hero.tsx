@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import { motion } from "framer-motion";
 import { useLanguage } from "@/context/LanguageContext";
 import { ArrowDown, MapPin, Circle } from "lucide-react";
 import { GitHubIcon, LinkedInIcon } from "@/components/Icons";
@@ -130,13 +131,23 @@ export default function Hero() {
               className={`flex flex-wrap gap-4 pt-2 ${mounted ? "animate-fade-up" : "opacity-0"}`}
               style={{ animationDelay: "650ms" }}
             >
-              <button onClick={scrollToProjects} className="btn-primary">
+              <motion.button
+                onClick={scrollToProjects}
+                className="btn-primary"
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
+              >
                 {t.hero.cta}
                 <ArrowDown size={14} />
-              </button>
-              <button onClick={scrollToContact} className="btn-outline">
+              </motion.button>
+              <motion.button
+                onClick={scrollToContact}
+                className="btn-outline"
+                whileHover={{ scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
+              >
                 {t.hero.ctaSecondary}
-              </button>
+              </motion.button>
             </div>
 
             {/* Social links */}
@@ -167,11 +178,17 @@ export default function Hero() {
           </div>
 
           {/* Right / Photo */}
-          <div
-            className={`flex justify-center lg:justify-end ${mounted ? "animate-slide-right" : "opacity-0"}`}
-            style={{ animationDelay: "300ms" }}
+          <motion.div
+            className="flex justify-center lg:justify-end"
+            initial={{ opacity: 0, x: 40 }}
+            animate={mounted ? { opacity: 1, x: 0 } : { opacity: 0, x: 40 }}
+            transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
           >
-            <div className="relative">
+            <motion.div
+              className="relative"
+              whileHover={{ scale: 1.015 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+            >
               {/* Outer decorative frame */}
               <div className="absolute -inset-6 border border-gold/6 z-0" />
               <div className="absolute -inset-3 border border-gold/12 z-0" />
@@ -227,8 +244,8 @@ export default function Hero() {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
 
         {/* Scroll hint */}

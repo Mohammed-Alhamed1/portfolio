@@ -1,8 +1,15 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { useLanguage } from "@/context/LanguageContext";
 import { ExternalLink, Star } from "lucide-react";
 import { GitHubIcon } from "@/components/Icons";
+import { fadeInUp, staggerContainer, viewport } from "@/lib/motionVariants";
+
+const cardHover = {
+  rest: { y: 0, boxShadow: "0 0px 0px rgba(200,169,110,0)" },
+  hover: { y: -5, boxShadow: "0 16px 48px rgba(200,169,110,0.1)" },
+};
 
 export default function Projects() {
   const { t, isRTL } = useLanguage();
@@ -17,12 +24,18 @@ export default function Projects() {
       <div className="max-w-7xl mx-auto px-6 md:px-10">
 
         {/* Section header */}
-        <div className={`flex items-center gap-4 mb-6 ${isRTL ? "flex-row-reverse" : ""}`}>
+        <motion.div
+          className={`flex items-center gap-4 mb-6 ${isRTL ? "flex-row-reverse" : ""}`}
+          initial="hidden" whileInView="visible" viewport={viewport} variants={fadeInUp}
+        >
           <div className="gold-line-start" style={{ width: "48px" }} />
           <span className="section-label">{p.label}</span>
-        </div>
+        </motion.div>
 
-        <div className={`mb-16 ${isRTL ? "text-right" : "text-left"}`}>
+        <motion.div
+          className={`mb-16 ${isRTL ? "text-right" : "text-left"}`}
+          initial="hidden" whileInView="visible" viewport={viewport} variants={fadeInUp}
+        >
           <h2
             style={{
               fontFamily: isRTL ? "var(--font-ibm-arabic)" : "var(--font-display)",
@@ -37,12 +50,32 @@ export default function Projects() {
             style={{ fontFamily: isRTL ? "var(--font-ibm-arabic)" : undefined }}>
             {p.subheading}
           </p>
-        </div>
+        </motion.div>
 
         {/* Featured projects */}
-        <div className="grid md:grid-cols-2 gap-6 mb-6">
+        <motion.div
+          className="grid md:grid-cols-2 gap-6 mb-6"
+          initial="hidden" whileInView="visible" viewport={viewport} variants={staggerContainer}
+        >
           {featured.map((proj, i) => (
-            <div key={i} className="glass-card p-8 flex flex-col justify-between min-h-[280px] relative overflow-hidden">
+            <motion.div
+              key={i}
+              className="glass-card p-8 flex flex-col justify-between min-h-[280px] relative overflow-hidden"
+              variants={fadeInUp}
+              initial="rest"
+              whileHover="hover"
+              animate="rest"
+            >
+              {/* Hover overlay accent */}
+              <motion.div
+                className="absolute inset-0 pointer-events-none"
+                variants={{
+                  rest: { opacity: 0 },
+                  hover: { opacity: 1 },
+                }}
+                style={{ background: "linear-gradient(135deg, rgba(200,169,110,0.03) 0%, transparent 60%)" }}
+              />
+
               {/* Featured badge */}
               <div className="absolute top-5 right-5 flex items-center gap-1.5 text-xs text-gold tracking-wider">
                 <Star size={11} className="fill-gold" />
@@ -73,7 +106,6 @@ export default function Projects() {
               </div>
 
               <div className="mt-6">
-                {/* Tags */}
                 <div className={`flex flex-wrap gap-2 mb-5 ${isRTL ? "justify-end" : ""}`}>
                   {proj.tags.map((tag, ti) => (
                     <span key={ti} className="text-[10px] tracking-widest text-gold/70 uppercase px-2.5 py-1"
@@ -83,7 +115,6 @@ export default function Projects() {
                   ))}
                 </div>
 
-                {/* Links */}
                 <div className={`flex items-center gap-4 ${isRTL ? "flex-row-reverse" : ""}`}>
                   {proj.github && (
                     <a href={proj.github} target="_blank" rel="noopener noreferrer"
@@ -101,14 +132,23 @@ export default function Projects() {
                   )}
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {/* Other projects */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-5">
+        <motion.div
+          className="grid sm:grid-cols-2 lg:grid-cols-2 gap-5"
+          initial="hidden" whileInView="visible" viewport={viewport} variants={staggerContainer}
+        >
           {rest.map((proj, i) => (
-            <div key={i} className="glass-card p-6 flex flex-col justify-between">
+            <motion.div
+              key={i}
+              className="glass-card p-6 flex flex-col justify-between"
+              variants={fadeInUp}
+              whileHover={{ y: -3, boxShadow: "0 12px 32px rgba(200,169,110,0.07)" }}
+              transition={{ duration: 0.22, ease: "easeOut" }}
+            >
               <div>
                 <div className="flex items-center justify-between mb-3">
                   <div className={`flex items-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
@@ -152,22 +192,27 @@ export default function Projects() {
                   </span>
                 ))}
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {/* GitHub CTA */}
-        <div className="mt-12 text-center">
-          <a
+        <motion.div
+          className="mt-12 text-center"
+          initial="hidden" whileInView="visible" viewport={viewport} variants={fadeInUp}
+        >
+          <motion.a
             href="https://github.com/Mohammed-Alhamed1"
             target="_blank"
             rel="noopener noreferrer"
             className="btn-outline inline-flex"
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.97 }}
           >
             <GitHubIcon size={14} />
             {isRTL ? "استعرض المزيد على GitHub" : "View More on GitHub"}
-          </a>
-        </div>
+          </motion.a>
+        </motion.div>
       </div>
     </section>
   );
